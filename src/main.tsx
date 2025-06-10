@@ -8,7 +8,7 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 
 async function enableMocking() {
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) {
     return;
   }
 
