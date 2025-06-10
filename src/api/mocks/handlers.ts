@@ -11,7 +11,7 @@ export const handlers = [
       lang: string;
     };
 
-    if (!email.includes('@')) {
+    if (!email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       return HttpResponse.json(
         {
           error: {
@@ -36,10 +36,10 @@ export const handlers = [
   http.post('/v1/auth/login/email', async ({ request }) => {
     const { email, pincode } = (await request.json()) as {
       email: string;
-      pincode: string;
+      pincode: number;
     };
 
-    if (pincode !== VALID_PIN.toString()) {
+    if (pincode !== VALID_PIN) {
       return HttpResponse.json(
         {
           error: {
@@ -65,38 +65,29 @@ export const handlers = [
     ).join('');
 
     const user = {
-      id: '1',
+      id: Math.random().toString(36).substring(7),
       login_code,
-      created_at: new Date().toISOString(),
     };
 
     ANONYMOUS_USERS.set(login_code, user);
 
-    return HttpResponse.json({ user });
+    return HttpResponse.json({
+      data: {
+        login_code,
+      },
+    });
   }),
 
   // Login with access code
   http.post('/v1/auth/login/code', async ({ request }) => {
     const { login_code } = (await request.json()) as { login_code: string };
 
-    if (!login_code || login_code.length !== 16) {
+    if (!login_code?.match(/^\d{16}$/)) {
       return HttpResponse.json(
         {
           error: {
             code: 'AUTHENTICATION_ERROR',
             message: 'Invalid login code format',
-          },
-        },
-        { status: 401 },
-      );
-    }
-
-    if (login_code !== '1234567890123456') {
-      return HttpResponse.json(
-        {
-          error: {
-            code: 'AUTHENTICATION_ERROR',
-            message: 'Authentication error',
           },
         },
         { status: 401 },
